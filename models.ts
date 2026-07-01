@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
-githubPagesUrl: { type: String, default: "" },
-isPublishedToGithub: { type: Boolean, default: false },
-
+githubPagesUrl: { type: String, 'default': "" },
+isPublishedToGithub: { type: Boolean, 'default': false },
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, lowercase: true, trim: true },
   createdAt: { type: Date, default: Date.now }
