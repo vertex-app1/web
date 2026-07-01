@@ -1,0 +1,6 @@
+{
+  "name": "SmartCV",
+  "description": "A premium AI-powered portfolio & CV builder. Custom design templates, dynamic CSS/video backdrops, speech synthesis voice bios, mic audio recording, and live dynamic publishing.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
