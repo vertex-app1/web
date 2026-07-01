@@ -518,39 +518,41 @@ export default function App() {
   };
 
   // Generate dynamic hosted link on server
-  const handleDeployCV = async () => {
-    if (!username.trim()) {
-      setDeployError("Please provide a username first!");
-      return;
-    }
-    setDeployError("");
-    setIsGenerating(true);
-    setGeneratedUrl("");
+const handleDeployCV = async () => {
+  if (!username.trim()) {
+    setDeployError("Please provide a username first!");
+    return;
+  }
+  setDeployError("");
+  setIsGenerating(true);
+  setGeneratedUrl("");
 
-    try {
-      const res = await fetch("/api/cv", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: username.trim(),
-          cvData
-        })
-      });
-      const data = await res.json();
-      if (data.url) {
-        setGeneratedUrl(data.url);
-        window.location.assign(`/cv/${username.trim().toLowerCase()}`);
-      } else if (data.error) {
-        setDeployError(data.error);
-      }
-    } catch (e) {
-      console.error(e);
-      setDeployError("Deployment failed. Could not communicate with server.");
-    } finally {
-      setIsGenerating(false);
+  try {
+    const res = await fetch("/api/cv", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username.trim(),
+        cvData
+      })
+    });
+    const data = await res.json();
+    if (data.url) {
+      // تخزين الرابط الكامل في حالة منفصلة للاستخدام الداخلي
+      setGeneratedUrl(data.url); // الاحتفاظ بالرابط الكامل للاستخدام الفعلي
+      window.location.assign(`/cv/${username.trim().toLowerCase()}`);
+    } else if (data.error) {
+      setDeployError(data.error);
     }
-  };
-  // أضف هذه الدالة بعد دالة handleDeployCV مباشرة
+  } catch (e) {
+    console.error(e);
+    setDeployError("Deployment failed. Could not communicate with server.");
+  } finally {
+    setIsGenerating(false);
+  }
+};
+
+// دالة النشر على GitHub Pages
 const publishCV = async () => {
   if (!username.trim()) {
     alert("❌ الرجاء إدخال اسم المستخدم أولاً!");
@@ -564,7 +566,7 @@ const publishCV = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        cvData: cvData // إرسال بيانات السيرة إذا كان السيرفر يحتاجها
+        cvData: cvData
       })
     });
 
@@ -575,9 +577,15 @@ const publishCV = async () => {
 
     const data = await response.json();
     if (data.success && data.githubPagesUrl) {
-      alert(`✅ تم النشر بنجاح! الرابط: ${data.githubPagesUrl}`);
-      // اختياري: فتح الرابط في نافذة جديدة
-      // window.open(data.githubPagesUrl, '_blank');
+      // عرض الرابط المختصر في التنبيه مع إمكانية نسخ الرابط الكامل
+      const fullUrl = data.githubPagesUrl;
+      const shortDisplayUrl = fullUrl.length > 60 ? fullUrl.substring(0, 60) + '...' : fullUrl;
+      alert(`✅ تم النشر بنجاح!\n\nالرابط: ${shortDisplayUrl}\n\n📋 اضغط على الرابط لنسخه:\n${fullUrl}`);
+      
+      // فتح الرابط في نافذة جديدة تلقائياً
+      if (confirm('هل تريد فتح الرابط الآن؟')) {
+        window.open(fullUrl, '_blank');
+      }
     } else {
       alert('❌ فشل النشر: ' + (data.message || 'خطأ غير معروف'));
     }
@@ -1877,10 +1885,23 @@ const publishCV = async () => {
                   </p>
                   <p className="text-[11px] text-gray-300">{dt.liveAtMsg}</p>
                   
-                  <div className="p-2.5 bg-black/40 border border-emerald-500/10 rounded-lg font-mono text-[10px] break-all select-all text-emerald-300">
-                    {generatedUrl}
-                  </div>
-
+                {/* عرض الرابط المختصر مع زر نسخ */}
+<div className="p-2.5 bg-black/40 border border-emerald-500/10 rounded-lg font-mono text-[10px] text-emerald-300">
+  <div className="flex items-center justify-between gap-2">
+    <span className="truncate flex-1 text-left">
+      {generatedUrl.length > 50 ? generatedUrl.substring(0, 50) + '...' : generatedUrl}
+    </span>
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(generatedUrl);
+        alert(dashboardLang === "ar" ? "✅ تم نسخ الرابط الكامل!" : "✅ Full link copied!");
+      }}
+      className="text-[10px] px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 transition-colors cursor-pointer whitespace-nowrap"
+    >
+      📋 نسخ
+    </button>
+  </div>
+</div>
                   <a 
                     href={generatedUrl} 
                     target="_blank" 
